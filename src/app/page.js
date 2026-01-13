@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import styles from "./page.module.css";
 import { Card, Button, Input, Textarea, Select, Toggle, RadioItem, EmptyState } from "./components/ui";
 import { DraggableList } from "./components/DraggableList";
+import { useAuthUser } from "../lib/hooks/auth";
 import { useProjects } from "../lib/hooks/projects";
 import { useScenes } from "../lib/hooks/scenes";
 import { useGeneratedScenes } from "../lib/hooks/generatedScenes";
@@ -18,7 +19,9 @@ const CHARACTERS = [
 ];
 
 export default function Home() {
-  const { projects, addProject, updateProject, deleteProject } = useProjects();
+  const { user, loading: authLoading, error: authError } = useAuthUser();
+  const userId = user?.uid || null;
+  const { projects, addProject, updateProject, deleteProject } = useProjects(userId);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [selectedGeneratedId, setSelectedGeneratedId] = useState(null);
 
@@ -29,14 +32,14 @@ export default function Home() {
     deleteScene,
     reorderScenes,
     nextSceneNumber,
-  } = useScenes(selectedProjectId);
+  } = useScenes(userId, selectedProjectId);
   const {
     generatedScenes,
     addGeneratedScene,
     deleteGeneratedScene,
-  } = useGeneratedScenes(selectedProjectId);
+  } = useGeneratedScenes(userId, selectedProjectId);
   const { combinedScenes, addCombinedScene, deleteCombinedScene } =
-    useCombinedScenes(selectedProjectId);
+    useCombinedScenes(userId, selectedProjectId);
 
   const selectedProject = useMemo(
     () => projects.find((p) => p.id === selectedProjectId) || null,
@@ -57,6 +60,7 @@ export default function Home() {
 
   const handleProjectSubmit = async (event) => {
     event.preventDefault();
+    if (!userId) return;
     if (selectedProject) {
       await updateProject(selectedProject.id, projectForm);
       return;
@@ -108,6 +112,16 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        {authLoading && (
+          <Card title="Signing in" compact>
+            <div className="list-item__subtitle">Connecting with anonymous auth…</div>
+          </Card>
+        )}
+        {authError && (
+          <Card title="Auth error" compact>
+            <div className="list-item__subtitle">{authError.message}</div>
+          </Card>
+        )}
         <div className={styles.header}>
           <div>
             <div className={styles.title}>Projects & Scenes</div>

@@ -1,0 +1,45 @@
+/* [project]/src/app/page.module.css [app-client] (css) */
+.page-module___8aEwW__page {
+  padding: 32px 20px 48px;
+}
+
+.page-module___8aEwW__main {
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+}
+
+.page-module___8aEwW__header {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  display: flex;
+}
+
+.page-module___8aEwW__title {
+  letter-spacing: .3px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.page-module___8aEwW__subtitle {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.page-module___8aEwW__grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+  gap: 16px;
+  display: grid;
+}
+
+.page-module___8aEwW__stack {
+  flex-direction: column;
+  gap: 12px;
+  display: flex;
+}
+
+/*# sourceMappingURL=src_app_page_module_2aa510fc.css.map*/

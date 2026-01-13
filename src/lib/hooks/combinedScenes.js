@@ -1,58 +1,64 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ref, onValue, push, set, remove } from 'firebase/database';
-import { db, DEFAULT_USER_ID } from '../firebase';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
-export function useCombinedScenes(projectId) {
+export function useCombinedScenes(userId, projectId) {
   const [combinedScenes, setCombinedScenes] = useState([]);
 
   useEffect(() => {
-    if (!projectId) return undefined;
-    const combinedRef = ref(
+    if (!userId || !projectId) return undefined;
+    const combinedRef = collection(
       db,
-      `users/${DEFAULT_USER_ID}/projects/${projectId}/combinedScenes`
+      `users/${userId}/projects/${projectId}/combinedScenes`
     );
-    const unsubscribe = onValue(combinedRef, (snapshot) => {
-      const value = snapshot.val() || {};
-      const list = Object.entries(value).map(([id, data]) => ({
-        id,
-        ...data,
+    const q = query(combinedRef, orderBy('createdAt', 'asc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
       }));
-      list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       setCombinedScenes(list);
     });
     return () => {
       unsubscribe();
       setCombinedScenes([]);
     };
-  }, [projectId]);
+  }, [userId, projectId]);
 
   const addCombinedScene = useCallback(
     async ({ note }) => {
-      if (!projectId) return null;
-      const combinedRef = ref(
+      if (!userId || !projectId) return null;
+      const combinedRef = collection(
         db,
-        `users/${DEFAULT_USER_ID}/projects/${projectId}/combinedScenes`
+        `users/${userId}/projects/${projectId}/combinedScenes`
       );
-      const newRef = push(combinedRef);
       const payload = { note: note || '', createdAt: Date.now() };
-      await set(newRef, payload);
-      return newRef.key;
+      const docRef = await addDoc(combinedRef, payload);
+      return docRef.id;
     },
-    [projectId]
+    [userId, projectId]
   );
 
   const deleteCombinedScene = useCallback(
     async (combinedSceneId) => {
-      if (!projectId || !combinedSceneId) return;
-      const targetRef = ref(
+      if (!userId || !projectId || !combinedSceneId) return;
+      const targetRef = doc(
         db,
-        `users/${DEFAULT_USER_ID}/projects/${projectId}/combinedScenes/${combinedSceneId}`
+        `users/${userId}/projects/${projectId}/combinedScenes/${combinedSceneId}`
       );
-      return remove(targetRef);
+      return deleteDoc(targetRef);
     },
-    [projectId]
+    [userId, projectId]
   );
 
   return { combinedScenes, addCombinedScene, deleteCombinedScene };
