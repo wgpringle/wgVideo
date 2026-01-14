@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 1, "column": 0}, "map": {"version":3,"sources":["file:///Users/wg/GitHub/wgVideo/src/app/page.module.css"],"sourcesContent":[".page {\n  padding: 32px 20px 48px;\n}\n\n.main {\n  max-width: 1300px;\n  margin: 0 auto;\n  display: flex;\n  flex-direction: column;\n  gap: 20px;\n}\n\n.header {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n}\n\n.title {\n  font-size: 26px;\n  font-weight: 800;\n  letter-spacing: 0.3px;\n}\n\n.subtitle {\n  color: #9ca3af;\n  font-size: 14px;\n}\n\n.grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));\n  gap: 16px;\n  align-items: start;\n}\n\n.stack {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n}\n"],"names":[],"mappings":"AAAA;;;;AAIA;;;;;;;;AAQA;;;;;;;AAOA;;;;;;AAMA;;;;;AAKA;;;;;;;AAOA"}}]
-}

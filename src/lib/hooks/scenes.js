@@ -1,101 +1,93 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  updateDoc,
-  writeBatch,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref, onValue, push, set, update, remove } from 'firebase/database';
+import { db, DEFAULT_USER_ID } from '../firebase';
 
-export function useScenes(userId, projectId) {
+export function useScenes(projectId) {
   const [scenes, setScenes] = useState([]);
 
   useEffect(() => {
-    if (!userId || !projectId) return undefined;
-    const scenesRef = collection(
+    if (!projectId) return undefined;
+    const scenesRef = ref(
       db,
-      `users/${userId}/projects/${projectId}/scenes`
+      `users/${DEFAULT_USER_ID}/projects/${projectId}/scenes`
     );
-    const q = query(scenesRef, orderBy('order', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
+    const unsubscribe = onValue(scenesRef, (snapshot) => {
+      const value = snapshot.val() || {};
+      const list = Object.entries(value).map(([id, data]) => ({
+        id,
+        ...data,
       }));
+      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setScenes(list);
     });
     return () => {
       unsubscribe();
       setScenes([]);
     };
-  }, [userId, projectId]);
+  }, [projectId]);
 
   const nextSceneNumber = useMemo(() => scenes.length + 1, [scenes.length]);
 
   const addScene = useCallback(
     async (name) => {
-      if (!userId || !projectId) return null;
-      const scenesRef = collection(
+      if (!projectId) return null;
+      const scenesRef = ref(
         db,
-        `users/${userId}/projects/${projectId}/scenes`
+        `users/${DEFAULT_USER_ID}/projects/${projectId}/scenes`
       );
+      const newRef = push(scenesRef);
       const payload = {
         name: name || `Scene ${nextSceneNumber}`,
         enabled: true,
         order: scenes.length,
         createdAt: Date.now(),
       };
-      const docRef = await addDoc(scenesRef, payload);
-      return docRef.id;
+      await set(newRef, payload);
+      return newRef.key;
     },
-    [userId, projectId, nextSceneNumber, scenes.length]
+    [projectId, nextSceneNumber, scenes.length]
   );
 
   const updateScene = useCallback(
     async (sceneId, updates) => {
-      if (!userId || !projectId || !sceneId) return;
-      const sceneRef = doc(
+      if (!projectId || !sceneId) return;
+      const sceneRef = ref(
         db,
-        `users/${userId}/projects/${projectId}/scenes/${sceneId}`
+        `users/${DEFAULT_USER_ID}/projects/${projectId}/scenes/${sceneId}`
       );
-      return updateDoc(sceneRef, updates);
+      return update(sceneRef, updates);
     },
-    [userId, projectId]
+    [projectId]
   );
 
   const deleteScene = useCallback(
     async (sceneId) => {
-      if (!userId || !projectId || !sceneId) return;
-      const sceneRef = doc(
+      if (!projectId || !sceneId) return;
+      const sceneRef = ref(
         db,
-        `users/${userId}/projects/${projectId}/scenes/${sceneId}`
+        `users/${DEFAULT_USER_ID}/projects/${projectId}/scenes/${sceneId}`
       );
-      return deleteDoc(sceneRef);
+      return remove(sceneRef);
     },
-    [userId, projectId]
+    [projectId]
   );
 
   const reorderScenes = useCallback(
     async (orderedIds) => {
-      if (!userId || !projectId || !orderedIds?.length) return;
-      const batch = writeBatch(db);
+      if (!projectId || !orderedIds?.length) return;
+      const updates = {};
       orderedIds.forEach((sceneId, index) => {
-        const sceneRef = doc(
-          db,
-          `users/${userId}/projects/${projectId}/scenes/${sceneId}`
-        );
-        batch.update(sceneRef, { order: index });
+        updates[`${sceneId}/order`] = index;
       });
-      return batch.commit();
+      const scenesRef = ref(
+        db,
+        `users/${DEFAULT_USER_ID}/projects/${projectId}/scenes`
+      );
+      return update(scenesRef, updates);
     },
-    [userId, projectId]
+    [projectId]
   );
 
   return {

@@ -1,39 +1,32 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref, onValue, push, set, remove } from 'firebase/database';
+import { db, DEFAULT_USER_ID } from '../firebase';
 
-export function useGeneratedScenes(userId, projectId) {
+export function useGeneratedScenes(projectId) {
   const [generatedScenes, setGeneratedScenes] = useState([]);
 
   useEffect(() => {
-    if (!userId || !projectId) return undefined;
-    const generatedRef = collection(
+    if (!projectId) return undefined;
+    const generatedRef = ref(
       db,
-      `users/${userId}/projects/${projectId}/generatedScenes`
+      `users/${DEFAULT_USER_ID}/projects/${projectId}/generatedScenes`
     );
-    const q = query(generatedRef, orderBy('createdAt', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
+    const unsubscribe = onValue(generatedRef, (snapshot) => {
+      const value = snapshot.val() || {};
+      const list = Object.entries(value).map(([id, data]) => ({
+        id,
+        ...data,
       }));
+      list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       setGeneratedScenes(list);
     });
     return () => {
       unsubscribe();
       setGeneratedScenes([]);
     };
-  }, [userId, projectId]);
+  }, [projectId]);
 
   const nextGeneratedNumber = useMemo(
     () => generatedScenes.length + 1,
@@ -42,32 +35,33 @@ export function useGeneratedScenes(userId, projectId) {
 
   const addGeneratedScene = useCallback(
     async (payload = {}) => {
-      if (!userId || !projectId) return null;
-      const generatedRef = collection(
+      if (!projectId) return null;
+      const generatedRef = ref(
         db,
-        `users/${userId}/projects/${projectId}/generatedScenes`
+        `users/${DEFAULT_USER_ID}/projects/${projectId}/generatedScenes`
       );
+      const newRef = push(generatedRef);
       const data = {
         name: payload.name || `Scene ${nextGeneratedNumber}`,
         note: payload.note || '',
         createdAt: Date.now(),
       };
-      const docRef = await addDoc(generatedRef, data);
-      return docRef.id;
+      await set(newRef, data);
+      return newRef.key;
     },
-    [userId, projectId, nextGeneratedNumber]
+    [projectId, nextGeneratedNumber]
   );
 
   const deleteGeneratedScene = useCallback(
     async (generatedSceneId) => {
-      if (!userId || !projectId || !generatedSceneId) return;
-      const targetRef = doc(
+      if (!projectId || !generatedSceneId) return;
+      const targetRef = ref(
         db,
-        `users/${userId}/projects/${projectId}/generatedScenes/${generatedSceneId}`
+        `users/${DEFAULT_USER_ID}/projects/${projectId}/generatedScenes/${generatedSceneId}`
       );
-      return deleteDoc(targetRef);
+      return remove(targetRef);
     },
-    [userId, projectId]
+    [projectId]
   );
 
   return { generatedScenes, addGeneratedScene, deleteGeneratedScene };
