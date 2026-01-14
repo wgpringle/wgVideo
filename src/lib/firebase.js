@@ -1,6 +1,11 @@
 'use client';
 
 import { initializeApp, getApps } from 'firebase/app';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  connectAuthEmulator,
+} from 'firebase/auth';
 import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
 
 const firebaseConfig = {
@@ -14,13 +19,16 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 if (
   typeof window !== 'undefined' &&
   process.env.NEXT_PUBLIC_USE_EMULATOR === 'true'
 ) {
   connectDatabaseEmulator(db, 'localhost', 9000);
+  connectAuthEmulator(auth, 'http://localhost:9099');
 }
 
-export { app, db };
-export const DEFAULT_USER_ID = '1111';
+const googleProvider = new GoogleAuthProvider();
+
+export { app, db, auth, googleProvider };

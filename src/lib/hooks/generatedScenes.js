@@ -2,16 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ref, onValue, push, set, remove } from 'firebase/database';
-import { db, DEFAULT_USER_ID } from '../firebase';
+import { db } from '../firebase';
 
-export function useGeneratedScenes(projectId) {
+export function useGeneratedScenes(userId, projectId) {
   const [generatedScenes, setGeneratedScenes] = useState([]);
 
   useEffect(() => {
-    if (!projectId) return undefined;
+    if (!userId || !projectId) {
+      setGeneratedScenes([]);
+      return undefined;
+    }
     const generatedRef = ref(
       db,
-      `users/${DEFAULT_USER_ID}/projects/${projectId}/generatedScenes`
+      `users/${userId}/projects/${projectId}/generatedScenes`
     );
     const unsubscribe = onValue(generatedRef, (snapshot) => {
       const value = snapshot.val() || {};
@@ -26,7 +29,7 @@ export function useGeneratedScenes(projectId) {
       unsubscribe();
       setGeneratedScenes([]);
     };
-  }, [projectId]);
+  }, [userId, projectId]);
 
   const nextGeneratedNumber = useMemo(
     () => generatedScenes.length + 1,
@@ -35,10 +38,10 @@ export function useGeneratedScenes(projectId) {
 
   const addGeneratedScene = useCallback(
     async (payload = {}) => {
-      if (!projectId) return null;
+      if (!userId || !projectId) return null;
       const generatedRef = ref(
         db,
-        `users/${DEFAULT_USER_ID}/projects/${projectId}/generatedScenes`
+        `users/${userId}/projects/${projectId}/generatedScenes`
       );
       const newRef = push(generatedRef);
       const data = {
@@ -49,19 +52,19 @@ export function useGeneratedScenes(projectId) {
       await set(newRef, data);
       return newRef.key;
     },
-    [projectId, nextGeneratedNumber]
+    [userId, projectId, nextGeneratedNumber]
   );
 
   const deleteGeneratedScene = useCallback(
     async (generatedSceneId) => {
-      if (!projectId || !generatedSceneId) return;
+      if (!userId || !projectId || !generatedSceneId) return null;
       const targetRef = ref(
         db,
-        `users/${DEFAULT_USER_ID}/projects/${projectId}/generatedScenes/${generatedSceneId}`
+        `users/${userId}/projects/${projectId}/generatedScenes/${generatedSceneId}`
       );
       return remove(targetRef);
     },
-    [projectId]
+    [userId, projectId]
   );
 
   return { generatedScenes, addGeneratedScene, deleteGeneratedScene };

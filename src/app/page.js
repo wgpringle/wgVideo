@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import { Card, Button, Input, Textarea, Select, Toggle, RadioItem, EmptyState } from "./components/ui";
 import { DraggableList } from "./components/DraggableList";
@@ -8,6 +9,7 @@ import { useProjects } from "../lib/hooks/projects";
 import { useScenes } from "../lib/hooks/scenes";
 import { useGeneratedScenes } from "../lib/hooks/generatedScenes";
 import { useCombinedScenes } from "../lib/hooks/combinedScenes";
+import { useAuth } from "../lib/auth";
 
 const CHARACTERS = [
   { value: "", label: "Select character" },
@@ -18,7 +20,11 @@ const CHARACTERS = [
 ];
 
 export default function Home() {
-  const { projects, addProject, updateProject, deleteProject } = useProjects();
+  const router = useRouter();
+  const { user, loading: authLoading, error: authError, signOut } = useAuth();
+  const userId = user?.uid;
+
+  const { projects, addProject, updateProject, deleteProject } = useProjects(userId);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [selectedGeneratedId, setSelectedGeneratedId] = useState(null);
 
@@ -29,14 +35,14 @@ export default function Home() {
     deleteScene,
     reorderScenes,
     nextSceneNumber,
-  } = useScenes(selectedProjectId);
+  } = useScenes(userId, selectedProjectId);
   const {
     generatedScenes,
     addGeneratedScene,
     deleteGeneratedScene,
-  } = useGeneratedScenes(selectedProjectId);
+  } = useGeneratedScenes(userId, selectedProjectId);
   const { combinedScenes, addCombinedScene, deleteCombinedScene } =
-    useCombinedScenes(selectedProjectId);
+    useCombinedScenes(userId, selectedProjectId);
 
   const selectedProject = useMemo(
     () => projects.find((p) => p.id === selectedProjectId) || null,
@@ -54,6 +60,14 @@ export default function Home() {
   );
 
   const [projectForm, setProjectForm] = useState(emptyForm);
+
+  useEffect(() => {
+    if (!userId) {
+      setSelectedProjectId(null);
+      setSelectedGeneratedId(null);
+      setProjectForm(emptyForm);
+    }
+  }, [userId, emptyForm]);
 
   const handleProjectSubmit = async (event) => {
     event.preventDefault();
@@ -105,6 +119,41 @@ export default function Home() {
     await addCombinedScene({ note: noteParts.join(" | ") });
   };
 
+  if (authLoading) {
+    return (
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <Card title="Loading">
+            <EmptyState message="Checking authentication..." />
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  if (!userId) {
+    return (
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <Card title="Sign in required">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                Sign in with Google to manage your projects and scenes. Your data
+                is stored per account.
+              </div>
+              {authError ? (
+                <div className="empty">Auth error: {authError}</div>
+              ) : null}
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button onClick={() => router.push("/login")}>Go to login</Button>
+              </div>
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -112,9 +161,14 @@ export default function Home() {
           <div>
             <div className={styles.title}>Projects & Scenes</div>
             <div className={styles.subtitle}>
-              Manage projects, scenes, generated scenes, and combined scenes. Data
-              persists in Firebase (user 1111, emulator-ready).
+              Signed in as {user.email || user.displayName || "your account"}.
+              Data is stored per account in Firebase.
             </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Button variant="secondary" size="sm" onClick={signOut}>
+              Sign out
+            </Button>
           </div>
         </div>
 
