@@ -81,5 +81,3 @@
 [32:19:33.390] Browser WARN    [2026-01-13T22:03:00.624Z]  @firebase/firestore: Firestore (12.6.0): WebChannelConnection RPC 'Listen' stream 0x4137cbcb transport errored. Name: undefined Message: undefined
 [32:36:13.940] Browser WARN    [2026-01-13T22:19:41.268Z]  @firebase/firestore: Firestore (12.6.0): WebChannelConnection RPC 'Listen' stream 0x4137cbcc transport errored. Name: undefined Message: undefined
 [32:46:20.498] Browser WARN    [2026-01-13T22:29:48.002Z]  @firebase/firestore: Firestore (12.6.0): WebChannelConnection RPC 'Listen' stream 0x4137cbcd transport errored. Name: undefined Message: undefined
-[33:15:59.780] Server  LOG     ✓ Compiled in 194ms
-[33:19:43.309] Server  LOG     ✓ Compiled in 8ms

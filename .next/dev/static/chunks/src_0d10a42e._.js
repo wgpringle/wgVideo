@@ -417,25 +417,20 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$app$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/app/dist/esm/index.esm.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$firestore$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/firebase/firestore/dist/esm/index.esm.js [app-client] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/firestore/dist/index.esm.js [app-client] (ecmascript)");
-"use client";
+'use client';
 ;
-;
-const { NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN, NEXT_PUBLIC_FIREBASE_PROJECT_ID, NEXT_PUBLIC_FIREBASE_APP_ID, NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID } = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$polyfills$2f$process$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].env;
-if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
 ;
 const firebaseConfig = {
-    apiKey: NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    appId: NEXT_PUBLIC_FIREBASE_APP_ID,
-    ...NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID && {
-        measurementId: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    }
+    apiKey: ("TURBOPACK compile-time value", "AIzaSyDCVz0eG-Y78T5a7rQI4ko_EMHl7P1pl6M") || 'AIzaSyDCVz0eG-Y78T5a7rQI4ko_EMHl7P1pl6M',
+    authDomain: ("TURBOPACK compile-time value", "wgvideo-4709b.firebaseapp.com") || 'wgvideo-4709b.firebaseapp.com',
+    projectId: ("TURBOPACK compile-time value", "wgvideo-4709b") || 'wgvideo-4709b',
+    appId: ("TURBOPACK compile-time value", "1:945029037864:web:533d80ecf29d8f1bf49a1d") || '1:945029037864:web:533d80ecf29d8f1bf49a1d',
+    measurementId: ("TURBOPACK compile-time value", "G-G9RQVEDQ7L") || 'G-G9RQVEDQ7L'
 };
 const app = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$app$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getApps"])().length ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$app$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getApps"])()[0] : (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$app$2f$dist$2f$esm$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["initializeApp"])(firebaseConfig);
 const db = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getFirestore"])(app);
 ;
-const DEFAULT_USER_ID = "1111";
+const DEFAULT_USER_ID = '1111';
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }
