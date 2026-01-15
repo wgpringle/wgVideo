@@ -1,7 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ref, onValue, push, set, update, remove } from 'firebase/database';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 
 export function useProjects(userId) {
@@ -13,14 +22,13 @@ export function useProjects(userId) {
       return undefined;
     }
 
-    const projectsRef = ref(db, `users/${userId}/projects`);
-    const unsubscribe = onValue(projectsRef, (snapshot) => {
-      const value = snapshot.val() || {};
-      const list = Object.entries(value).map(([id, data]) => ({
-        id,
-        ...data,
+    const projectsRef = collection(db, 'users', userId, 'projects');
+    const projectsQuery = query(projectsRef, orderBy('createdAt'));
+    const unsubscribe = onSnapshot(projectsQuery, (snapshot) => {
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
       }));
-      list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       setProjects(list);
     });
 
@@ -33,17 +41,15 @@ export function useProjects(userId) {
   const addProject = useCallback(
     async (project) => {
       if (!userId) return null;
-      const projectsRef = ref(db, `users/${userId}/projects`);
-      const newRef = push(projectsRef);
+      const projectsRef = collection(db, 'users', userId, 'projects');
       const payload = {
         name: project.name || 'Untitled Project',
         cameraRules: project.cameraRules || '',
         videoStyleNotes: project.videoStyleNotes || '',
-        characterId: project.characterId || '',
         createdAt: Date.now(),
       };
-      await set(newRef, payload);
-      return newRef.key;
+      const newDoc = await addDoc(projectsRef, payload);
+      return newDoc.id;
     },
     [userId]
   );
@@ -51,8 +57,8 @@ export function useProjects(userId) {
   const updateProject = useCallback(
     async (projectId, updates) => {
       if (!userId || !projectId) return null;
-      const projectRef = ref(db, `users/${userId}/projects/${projectId}`);
-      return update(projectRef, updates);
+      const projectRef = doc(db, 'users', userId, 'projects', projectId);
+      return updateDoc(projectRef, updates);
     },
     [userId]
   );
@@ -60,8 +66,8 @@ export function useProjects(userId) {
   const deleteProject = useCallback(
     async (projectId) => {
       if (!userId || !projectId) return null;
-      const projectRef = ref(db, `users/${userId}/projects/${projectId}`);
-      return remove(projectRef);
+      const projectRef = doc(db, 'users', userId, 'projects', projectId);
+      return deleteDoc(projectRef);
     },
     [userId]
   );

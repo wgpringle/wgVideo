@@ -1,7 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ref, onValue, push, set, update, remove } from 'firebase/database';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  writeBatch,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 
 export function useScenes(userId, projectId) {
@@ -12,14 +22,20 @@ export function useScenes(userId, projectId) {
       setScenes([]);
       return undefined;
     }
-    const scenesRef = ref(db, `users/${userId}/projects/${projectId}/scenes`);
-    const unsubscribe = onValue(scenesRef, (snapshot) => {
-      const value = snapshot.val() || {};
-      const list = Object.entries(value).map(([id, data]) => ({
-        id,
-        ...data,
+    const scenesRef = collection(
+      db,
+      'users',
+      userId,
+      'projects',
+      projectId,
+      'scenes'
+    );
+    const scenesQuery = query(scenesRef, orderBy('order'));
+    const unsubscribe = onSnapshot(scenesQuery, (snapshot) => {
+      const list = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
       }));
-      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setScenes(list);
     });
     return () => {
@@ -33,16 +49,22 @@ export function useScenes(userId, projectId) {
   const addScene = useCallback(
     async (name) => {
       if (!userId || !projectId) return null;
-      const scenesRef = ref(db, `users/${userId}/projects/${projectId}/scenes`);
-      const newRef = push(scenesRef);
+      const scenesRef = collection(
+        db,
+        'users',
+        userId,
+        'projects',
+        projectId,
+        'scenes'
+      );
       const payload = {
         name: name || `Scene ${nextSceneNumber}`,
         enabled: true,
         order: scenes.length,
         createdAt: Date.now(),
       };
-      await set(newRef, payload);
-      return newRef.key;
+      const newDoc = await addDoc(scenesRef, payload);
+      return newDoc.id;
     },
     [userId, projectId, nextSceneNumber, scenes.length]
   );
@@ -50,11 +72,16 @@ export function useScenes(userId, projectId) {
   const updateScene = useCallback(
     async (sceneId, updates) => {
       if (!userId || !projectId || !sceneId) return null;
-      const sceneRef = ref(
+      const sceneRef = doc(
         db,
-        `users/${userId}/projects/${projectId}/scenes/${sceneId}`
+        'users',
+        userId,
+        'projects',
+        projectId,
+        'scenes',
+        sceneId
       );
-      return update(sceneRef, updates);
+      return updateDoc(sceneRef, updates);
     },
     [userId, projectId]
   );
@@ -62,11 +89,16 @@ export function useScenes(userId, projectId) {
   const deleteScene = useCallback(
     async (sceneId) => {
       if (!userId || !projectId || !sceneId) return null;
-      const sceneRef = ref(
+      const sceneRef = doc(
         db,
-        `users/${userId}/projects/${projectId}/scenes/${sceneId}`
+        'users',
+        userId,
+        'projects',
+        projectId,
+        'scenes',
+        sceneId
       );
-      return remove(sceneRef);
+      return deleteDoc(sceneRef);
     },
     [userId, projectId]
   );
@@ -74,12 +106,20 @@ export function useScenes(userId, projectId) {
   const reorderScenes = useCallback(
     async (orderedIds) => {
       if (!userId || !projectId || !orderedIds?.length) return null;
-      const updates = {};
+      const batch = writeBatch(db);
       orderedIds.forEach((sceneId, index) => {
-        updates[`${sceneId}/order`] = index;
+        const sceneRef = doc(
+          db,
+          'users',
+          userId,
+          'projects',
+          projectId,
+          'scenes',
+          sceneId
+        );
+        batch.update(sceneRef, { order: index });
       });
-      const scenesRef = ref(db, `users/${userId}/projects/${projectId}/scenes`);
-      return update(scenesRef, updates);
+      return batch.commit();
     },
     [userId, projectId]
   );

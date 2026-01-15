@@ -1,23 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import { Card, Button, Input, Textarea, Select, Toggle, RadioItem, EmptyState } from "./components/ui";
+import { Card, Button, Input, Textarea, Toggle, RadioItem, EmptyState } from "./components/ui";
 import { DraggableList } from "./components/DraggableList";
 import { useProjects } from "../lib/hooks/projects";
 import { useScenes } from "../lib/hooks/scenes";
 import { useGeneratedScenes } from "../lib/hooks/generatedScenes";
 import { useCombinedScenes } from "../lib/hooks/combinedScenes";
 import { useAuth } from "../lib/auth";
-
-const CHARACTERS = [
-  { value: "", label: "Select character" },
-  { value: "alex", label: "Alex" },
-  { value: "bailey", label: "Bailey" },
-  { value: "casey", label: "Casey" },
-  { value: "drew", label: "Drew" },
-];
+import { useProjectSelection } from "../lib/projectSelection";
 
 export default function Home() {
   const router = useRouter();
@@ -25,7 +18,7 @@ export default function Home() {
   const userId = user?.uid;
 
   const { projects, addProject, updateProject, deleteProject } = useProjects(userId);
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const { selectedProjectId, setSelectedProjectId } = useProjectSelection();
   const [selectedGeneratedId, setSelectedGeneratedId] = useState(null);
 
   const {
@@ -54,12 +47,12 @@ export default function Home() {
       name: "",
       cameraRules: "",
       videoStyleNotes: "",
-      characterId: CHARACTERS[0].value,
     }),
     []
   );
 
   const [projectForm, setProjectForm] = useState(emptyForm);
+  const prevSelectedProjectRef = useRef(selectedProjectId);
 
   useEffect(() => {
     if (!userId) {
@@ -67,7 +60,27 @@ export default function Home() {
       setSelectedGeneratedId(null);
       setProjectForm(emptyForm);
     }
-  }, [userId, emptyForm]);
+  }, [userId, emptyForm, setSelectedProjectId]);
+
+  useEffect(() => {
+    if (prevSelectedProjectRef.current === selectedProjectId) {
+      return;
+    }
+    prevSelectedProjectRef.current = selectedProjectId;
+    if (!selectedProjectId) {
+      setProjectForm(emptyForm);
+      setSelectedGeneratedId(null);
+      return;
+    }
+    if (selectedProject) {
+      setProjectForm({
+        name: selectedProject.name || "",
+        cameraRules: selectedProject.cameraRules || "",
+        videoStyleNotes: selectedProject.videoStyleNotes || "",
+      });
+      setSelectedGeneratedId(null);
+    }
+  }, [selectedProjectId, selectedProject, emptyForm]);
 
   const handleProjectSubmit = async (event) => {
     event.preventDefault();
@@ -174,23 +187,7 @@ export default function Home() {
 
         <div className={styles.grid}>
           <div className={styles.stack}>
-            <Card
-              title={selectedProject ? "Edit Project" : "Add Project"}
-              actions={
-                selectedProject && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedProjectId(null);
-                      setProjectForm(emptyForm);
-                    }}
-                  >
-                    New Project
-                  </Button>
-                )
-              }
-            >
+            <Card title={selectedProject ? "Edit Project" : "Add Project"}>
               <form className="stack" onSubmit={handleProjectSubmit}>
                 <Input
                   label="Project Name"
@@ -222,17 +219,6 @@ export default function Home() {
                   }
                   rows={3}
                 />
-                <Select
-                  label="Character"
-                  value={projectForm.characterId}
-                  onChange={(e) =>
-                    setProjectForm((p) => ({
-                      ...p,
-                      characterId: e.target.value,
-                    }))
-                  }
-                  options={CHARACTERS}
-                />
                 <div style={{ display: "flex", gap: 8 }}>
                   <Button type="submit">
                     {selectedProject ? "Update Project" : "Create Project"}
@@ -254,55 +240,6 @@ export default function Home() {
               </form>
             </Card>
 
-            <Card title="Projects">
-              {projects.length ? (
-                <div className="list">
-                  {projects.map((project) => (
-                    <div key={project.id} className="list-item">
-                      <div>
-                        <div className="list-item__title">{project.name}</div>
-                        <div className="list-item__subtitle">
-                          {project.cameraRules || "No camera rules yet."}
-                        </div>
-                      </div>
-                      <div className="card__actions">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedProjectId(project.id);
-                            setProjectForm({
-                              name: project.name || "",
-                              cameraRules: project.cameraRules || "",
-                              videoStyleNotes: project.videoStyleNotes || "",
-                              characterId: project.characterId || CHARACTERS[0].value,
-                            });
-                            setSelectedGeneratedId(null);
-                          }}
-                        >
-                          Open
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            deleteProject(project.id);
-                            if (selectedProjectId === project.id) {
-                              setSelectedProjectId(null);
-                              setProjectForm(emptyForm);
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState message="No projects yet. Create one to get started." />
-              )}
-            </Card>
           </div>
 
           <div className={styles.stack}>

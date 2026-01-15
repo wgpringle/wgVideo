@@ -30,6 +30,109 @@ body {
   min-height: 100vh;
 }
 
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.primary-nav {
+  width: 220px;
+  background: linear-gradient(180deg, #0f172a, #0b1021);
+  border-right: 1px solid var(--border);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.primary-nav__brand {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.primary-nav__links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.primary-nav__item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(34, 211, 238, 0.12);
+  color: var(--text);
+  font-weight: 600;
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+.primary-nav__item:hover {
+  border-color: var(--accent);
+}
+
+.primary-nav__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primary-nav__section-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.primary-nav__section-title {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.primary-nav__project-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.primary-nav__project-item {
+  margin: 0;
+  padding: 0;
+}
+
+.primary-nav__project-button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-nav__project-button:hover {
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.primary-nav__project-button.is-active {
+  background: rgba(34, 211, 238, 0.2);
+  border-color: rgba(34, 211, 238, 0.6);
+}
+
+.primary-nav__hint {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+}
+
 a {
   color: inherit;
   text-decoration: none;
