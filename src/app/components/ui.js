@@ -2,9 +2,9 @@
 
 import clsx from 'clsx';
 
-export function Card({ title, actions, children, compact }) {
+export function Card({ title, actions, children, compact, className }) {
   return (
-    <div className={clsx('card', compact && 'card--compact')}>
+    <div className={clsx('card', compact && 'card--compact', className)}>
       {(title || actions) && (
         <div className="card__header">
           <span className="card__title">{title}</span>

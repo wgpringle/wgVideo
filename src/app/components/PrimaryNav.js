@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui";
 import { useAuth } from "../../lib/auth";
@@ -26,12 +27,15 @@ export function PrimaryNav() {
     <aside className="primary-nav">
       <div className="primary-nav__brand">wgVideo</div>
       <nav className="primary-nav__links">
-        <a className="primary-nav__item" href="/">
+        <Link className="primary-nav__item" href="/">
           Projects
-        </a>
-        <a className="primary-nav__item" href="/characters">
+        </Link>
+        <Link className="primary-nav__item" href="/characters">
           Characters
-        </a>
+        </Link>
+        <Link className="primary-nav__item" href="/settings">
+          Settings
+        </Link>
       </nav>
       <div className="primary-nav__section">
         <div className="primary-nav__section-title">Saved Projects</div>

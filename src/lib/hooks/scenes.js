@@ -61,6 +61,11 @@ export function useScenes(userId, projectId) {
         name: name || `Scene ${nextSceneNumber}`,
         enabled: true,
         order: scenes.length,
+        location: '',
+        description: '',
+        dialog: '',
+        characterId: '',
+        durationSeconds: 5,
         createdAt: Date.now(),
       };
       const newDoc = await addDoc(scenesRef, payload);

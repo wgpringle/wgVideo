@@ -6,6 +6,7 @@ import styles from './characters.module.css';
 import { Button, Card, EmptyState, Input } from '../components/ui';
 import { useAuth } from '../../lib/auth';
 import { useCharacters } from '../../lib/hooks/characters';
+import { useProjectSelection } from '../../lib/projectSelection';
 
 function getDefaultName(file) {
   if (!file?.name) return 'Untitled Character';
@@ -16,6 +17,7 @@ export default function CharactersPage() {
   const router = useRouter();
   const { user, loading: authLoading, error: authError, signOut } = useAuth();
   const userId = user?.uid;
+  const { setSelectedProjectId } = useProjectSelection();
 
   const { characters, uploadCharacter, updateCharacter, deleteCharacter } =
     useCharacters(userId);
@@ -31,6 +33,10 @@ export default function CharactersPage() {
     () => characters.find((item) => item.id === selectedCharacterId) || null,
     [characters, selectedCharacterId]
   );
+
+  useEffect(() => {
+    setSelectedProjectId(null);
+  }, [setSelectedProjectId]);
 
   useEffect(() => {
     if (selectedCharacterId && !selectedCharacter) {
@@ -161,18 +167,29 @@ export default function CharactersPage() {
                 <div className="list">
                   {characters.map((item) => (
                     <div key={item.id} className="list-item">
-                      <div style={{ flex: 1 }}>
-                        <input
-                          className="input"
-                          value={item.name || ''}
-                          onChange={(e) =>
-                            updateCharacter(item.id, { name: e.target.value })
-                          }
-                        />
-                        <div className="list-item__subtitle">
-                          {item.updatedAt
-                            ? `Updated ${new Date(item.updatedAt).toLocaleString()}`
-                            : 'No updates yet'}
+                      <div className={styles.listRow}>
+                        {item.downloadUrl ? (
+                          <img
+                            className={styles.thumbnail}
+                            src={item.downloadUrl}
+                            alt={item.name || 'Character thumbnail'}
+                          />
+                        ) : (
+                          <div className={styles.thumbnailPlaceholder} />
+                        )}
+                        <div className={styles.listDetails}>
+                          <input
+                            className="input"
+                            value={item.name || ''}
+                            onChange={(e) =>
+                              updateCharacter(item.id, { name: e.target.value })
+                            }
+                          />
+                          <div className="list-item__subtitle">
+                            {item.updatedAt
+                              ? `Updated ${new Date(item.updatedAt).toLocaleString()}`
+                              : 'No updates yet'}
+                          </div>
                         </div>
                       </div>
                       <div className="card__actions">

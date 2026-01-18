@@ -54,6 +54,41 @@
   flex-wrap: wrap;
 }
 
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.listDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.thumbnail {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #0b1021;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.thumbnailPlaceholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  flex-shrink: 0;
+}
+
 .previewFrame {
   width: 100%;
   border-radius: 12px;

@@ -3,12 +3,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
-import { Card, Button, Input, Textarea, Toggle, RadioItem, EmptyState } from "./components/ui";
+import {
+  Card,
+  Button,
+  Input,
+  Textarea,
+  Toggle,
+  RadioItem,
+  EmptyState,
+  Select,
+} from "./components/ui";
 import { DraggableList } from "./components/DraggableList";
 import { useProjects } from "../lib/hooks/projects";
 import { useScenes } from "../lib/hooks/scenes";
 import { useGeneratedScenes } from "../lib/hooks/generatedScenes";
 import { useCombinedScenes } from "../lib/hooks/combinedScenes";
+import { useCharacters } from "../lib/hooks/characters";
 import { useAuth } from "../lib/auth";
 import { useProjectSelection } from "../lib/projectSelection";
 
@@ -20,6 +30,7 @@ export default function Home() {
   const { projects, addProject, updateProject, deleteProject } = useProjects(userId);
   const { selectedProjectId, setSelectedProjectId } = useProjectSelection();
   const [selectedGeneratedId, setSelectedGeneratedId] = useState(null);
+  const { characters } = useCharacters(userId);
 
   const {
     scenes,
@@ -40,6 +51,23 @@ export default function Home() {
   const selectedProject = useMemo(
     () => projects.find((p) => p.id === selectedProjectId) || null,
     [projects, selectedProjectId]
+  );
+  const characterOptions = useMemo(
+    () => [
+      { value: "", label: "No character" },
+      ...characters.map((character) => ({
+        value: character.id,
+        label: character.name || "Untitled Character",
+      })),
+    ],
+    [characters]
+  );
+  const durationOptions = useMemo(
+    () => [
+      { value: "5", label: "5 seconds" },
+      { value: "10", label: "10 seconds" },
+    ],
+    []
   );
 
   const emptyForm = useMemo(
@@ -269,6 +297,51 @@ export default function Home() {
                           value={scene.name}
                           onChange={(e) =>
                             updateScene(scene.id, { name: e.target.value })
+                          }
+                        />
+                        <Textarea
+                          label="Location"
+                          placeholder="Enter location"
+                          value={scene.location || ""}
+                          onChange={(e) =>
+                            updateScene(scene.id, { location: e.target.value })
+                          }
+                          rows={2}
+                        />
+                        <Textarea
+                          label="Description"
+                          placeholder="Describe the scene"
+                          value={scene.description || ""}
+                          onChange={(e) =>
+                            updateScene(scene.id, { description: e.target.value })
+                          }
+                          rows={3}
+                        />
+                        <Textarea
+                          label="Dialog"
+                          placeholder="Write dialog"
+                          value={scene.dialog || ""}
+                          onChange={(e) =>
+                            updateScene(scene.id, { dialog: e.target.value })
+                          }
+                          rows={3}
+                        />
+                        <Select
+                          label="Character"
+                          value={scene.characterId || ""}
+                          options={characterOptions}
+                          onChange={(e) =>
+                            updateScene(scene.id, { characterId: e.target.value })
+                          }
+                        />
+                        <Select
+                          label="Duration"
+                          value={String(scene.durationSeconds ?? 5)}
+                          options={durationOptions}
+                          onChange={(e) =>
+                            updateScene(scene.id, {
+                              durationSeconds: Number(e.target.value),
+                            })
                           }
                         />
                         <div className="list-item__subtitle">Order #{scene.order + 1}</div>
